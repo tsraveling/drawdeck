@@ -1,9 +1,13 @@
+---
+current: "An adorable baby hippo"
+---
+
 # Example Deck
 
 - [ ] A woolly yak
-- [ ] A giant elephant
+- [x] A giant elephant
     > This one is my favorite
-- [ ] An adorable baby hippo
+- [x] An adorable baby hippo
 - [ ] An angry rhinoscerous
-- [ ] An aggressive moose
+- [x] An aggressive moose
 - [ ] A sleepy bear

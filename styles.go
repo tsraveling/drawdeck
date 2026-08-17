@@ -1,6 +1,6 @@
 package main
 
-import "github.com/charmbracelet/lipgloss"
+import "charm.land/lipgloss/v2"
 
 var (
 	// Colors
@@ -11,21 +11,31 @@ var (
 	ColorDimBright = lipgloss.Color("248")
 	ColorBasic     = lipgloss.Color("250")
 	ColorActive    = lipgloss.Color("76")
+	ColorCardBack  = lipgloss.Color("60")
 
 	// Styles
 
+	// both views are borderless; content carries the structure on its own
 	ViewStyle = lipgloss.NewStyle().
 			MarginTop(1).
-			PaddingTop(1).
 			PaddingLeft(2).
-			PaddingBottom(1).
-			MarginBottom(1).
+			PaddingRight(2).
+			MarginBottom(1)
+
+	LabelStyle = lipgloss.NewStyle().Foreground(ColorMuted)
+
+	CardStyle = lipgloss.NewStyle().
+			Padding(1, 2).
 			Border(lipgloss.RoundedBorder(), true).
-			BorderForeground(ColorPrimary)
+			BorderForeground(ColorSelection)
 
 	TitleStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(ColorPrimary)
+
+	CardTitleStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(ColorSelection)
 
 	ItemStyle = lipgloss.NewStyle().
 			PaddingLeft(2)
@@ -43,4 +53,13 @@ var (
 	ActiveStyle = lipgloss.NewStyle().Foreground(ColorActive)
 
 	HelpStyle = lipgloss.NewStyle().Foreground(ColorMuted)
+
+	DimStyle = lipgloss.NewStyle().Foreground(ColorMuted)
+
+	CountStyle = lipgloss.NewStyle().Foreground(ColorMuted)
+
+	ModalStyle = lipgloss.NewStyle().
+			Padding(1, 2).
+			Border(lipgloss.RoundedBorder(), true).
+			BorderForeground(ColorPrimary)
 )
