@@ -8,6 +8,9 @@ const (
 	confirmNone confirmKind = iota
 	confirmDeleteDeck
 	confirmResetDeck
+	confirmStartTournament
+	confirmLeaveTournament
+	confirmQuitTournament
 )
 
 type confirmResult int

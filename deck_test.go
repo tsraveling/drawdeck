@@ -180,6 +180,54 @@ func TestResetUnchecksEverything(t *testing.T) {
 	}
 }
 
+// both keys must coexist, and clearing one must not drop the block
+func TestFrontmatterKeysCoexist(t *testing.T) {
+	path := writeTemp(t, sample)
+	d, _ := loadDeck(path)
+	d.setCurrent("A woolly yak")
+	d.setWinner("A giant elephant")
+	d.write()
+
+	d2, _ := loadDeck(path)
+	if d2.current != "A woolly yak" || d2.winner != "A giant elephant" {
+		t.Fatalf("round-trip failed: current=%q winner=%q", d2.current, d2.winner)
+	}
+
+	d2.clearCurrent()
+	d2.write()
+
+	d3, _ := loadDeck(path)
+	if d3.current != "" {
+		t.Errorf("current should be gone, got %q", d3.current)
+	}
+	if d3.winner != "A giant elephant" {
+		t.Errorf("winner should survive, got %q", d3.winner)
+	}
+
+	d3.clearWinner()
+	d3.write()
+
+	raw, _ := os.ReadFile(path)
+	if strings.HasPrefix(string(raw), "---") {
+		t.Errorf("block should be gone once empty:\n%s", raw)
+	}
+}
+
+func TestResetClearsWinner(t *testing.T) {
+	path := writeTemp(t, sample)
+	d, _ := loadDeck(path)
+	d.setWinner("A woolly yak")
+	d.setCurrent("A giant elephant")
+	d.resetAll()
+	d.write()
+
+	d2, _ := loadDeck(path)
+	if d2.winner != "" || d2.current != "" || d2.doneCount() != 0 {
+		t.Errorf("reset incomplete: winner=%q current=%q done=%d",
+			d2.winner, d2.current, d2.doneCount())
+	}
+}
+
 func TestDrawableExcludesCurrent(t *testing.T) {
 	d, _ := loadDeck(writeTemp(t, "# T\n\n- [ ] a\n- [ ] b\n"))
 	d.current = "a"

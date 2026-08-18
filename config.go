@@ -8,8 +8,9 @@ import (
 
 // clamp bounds for view width
 const (
-	minViewWidth = 30
-	maxViewWidth = 80
+	minViewWidth       = 30
+	maxViewWidth       = 80
+	maxTournamentWidth = 120
 )
 
 type config struct {
@@ -31,6 +32,11 @@ func (c *config) viewWidth() int {
 // usable width inside ViewStyle's horizontal padding
 func (c *config) contentWidth() int {
 	return c.viewWidth() - 4
+}
+
+// the tournament shows two cards side by side, so it gets more room
+func (c *config) tournamentWidth() int {
+	return max(minViewWidth, min(c.ww, maxTournamentWidth))
 }
 
 func (c *config) setSize(w, h int) {

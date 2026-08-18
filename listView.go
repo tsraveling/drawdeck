@@ -13,6 +13,9 @@ import (
 // emitted when the user opens a deck
 type openDeckMsg struct{ path string }
 
+// emitted when the user starts tournament mode on a deck
+type startTournamentMsg struct{ path string }
+
 type deckEntry struct {
 	path string
 	deck *deck
@@ -34,6 +37,9 @@ type listView struct {
 	cursor  int
 	prompt  *textPrompt
 	confirm confirm
+
+	// transient inline message, cleared on the next navigation
+	notice string
 }
 
 func makeListView(reg *registry, focus string) listView {
@@ -133,10 +139,15 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 	}
 
 	if l.confirm.active() {
+		kind := l.confirm.kind
 		switch l.confirm.handle(msg) {
 		case confirmYes:
-			l.reg.remove(l.selectedPath())
 			l.confirm = confirm{}
+			if kind == confirmStartTournament {
+				path := l.selectedPath()
+				return l, func() tea.Msg { return startTournamentMsg{path} }
+			}
+			l.reg.remove(l.selectedPath())
 			l.reload()
 		case confirmNo:
 			l.confirm = confirm{}
@@ -149,6 +160,8 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 		return l, nil
 	}
 
+	l.notice = ""
+
 	switch km.String() {
 	case "q", "ctrl+c":
 		return l, tea.Quit
@@ -160,6 +173,8 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 		if l.cursor < len(l.entries)-1 {
 			l.cursor++
 		}
+	case "t":
+		return l.startTournament()
 	case "enter", "l", "right":
 		if e := l.selected(); e != nil && e.deck != nil {
 			path := e.path
@@ -177,6 +192,27 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 	}
 
 	return l, nil
+}
+
+// a tournament needs a readable deck of at least two cards, and warns before
+// discarding any existing play
+func (l listView) startTournament() (listView, tea.Cmd) {
+	e := l.selected()
+	if e == nil || e.deck == nil {
+		return l, nil
+	}
+	if len(e.deck.cards) < 2 {
+		l.notice = "tournament needs at least 2 cards"
+		return l, nil
+	}
+
+	if e.deck.doneCount() > 0 || e.deck.current != "" || e.deck.winner != "" {
+		l.confirm = newConfirm(confirmStartTournament, "Tournament mode will reset deck. Continue?")
+		return l, nil
+	}
+
+	path := e.path
+	return l, func() tea.Msg { return startTournamentMsg{path} }
 }
 
 func (l listView) selected() *deckEntry {
@@ -224,9 +260,10 @@ func (l listView) View() string {
 			style = ErrorStyle
 		}
 
-		// the delete confirm replaces the count on its own row
+		// the short delete confirm replaces the count on its own row; longer
+		// prompts render below the list instead
 		rightRendered := CountStyle.Render(right)
-		if selected && l.confirm.active() {
+		if selected && l.confirm.kind == confirmDeleteDeck {
 			rightRendered = l.confirm.View()
 		}
 
@@ -239,7 +276,15 @@ func (l listView) View() string {
 	}
 
 	b.WriteString("\n")
-	b.WriteString(HelpStyle.Render("↑↓/jk navigate  enter open  a add  d delete  r refresh  q quit"))
+	if l.confirm.kind == confirmStartTournament {
+		b.WriteString(lipgloss.PlaceHorizontal(cfg.contentWidth(), lipgloss.Center, l.confirm.View()))
+		b.WriteString("\n\n")
+	}
+	if l.notice != "" {
+		b.WriteString(ErrorStyle.Render(l.notice))
+		b.WriteString("\n\n")
+	}
+	b.WriteString(HelpStyle.Render("↑↓/jk navigate  enter open  t tournament  a add  d delete  r refresh  q quit"))
 
 	body := ViewStyle.Width(w).Render(b.String())
 	if l.prompt != nil {

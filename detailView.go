@@ -180,6 +180,19 @@ func (v detailView) Update(msg tea.Msg) (detailView, tea.Cmd) {
 func (v detailView) handleKey(msg tea.KeyPressMsg) (detailView, tea.Cmd) {
 	key := msg.String()
 
+	// a deck with a winner is locked; only reset or leave
+	if v.deck.winner != "" {
+		switch key {
+		case "esc":
+			return v, func() tea.Msg { return backToListMsg{} }
+		case "q", "ctrl+c":
+			return v, tea.Quit
+		case "ctrl+r":
+			v.confirm = newConfirm(confirmResetDeck, "Are you sure you want to reset this deck?")
+		}
+		return v, nil
+	}
+
 	if key == "space" || key == " " {
 		if v.flip.active || v.deck.exhausted() {
 			return v, nil
@@ -290,6 +303,15 @@ func (v detailView) renderCard() string {
 
 func (v detailView) View() string {
 	w := cfg.viewWidth()
+
+	// a finished tournament replaces the whole view until reset
+	if v.deck.winner != "" {
+		body := renderVictory(v.deck, cfg.contentWidth())
+		if v.confirm.active() {
+			body += "\n\n" + lipgloss.PlaceHorizontal(cfg.contentWidth(), lipgloss.Center, v.confirm.View())
+		}
+		return ViewStyle.Width(w).Render(body)
+	}
 
 	var b strings.Builder
 	b.WriteString(TitleStyle.Render(v.deck.title))

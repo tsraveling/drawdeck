@@ -31,6 +31,7 @@ type deck struct {
 	cards   []card
 	src     string
 	current string
+	winner  string
 
 	// raw file lines; every write mutates these in place and rewrites
 	lines []string
@@ -103,6 +104,7 @@ func loadDeck(path string) (*deck, error) {
 func (d *deck) parse() {
 	d.cards = nil
 	d.current = ""
+	d.winner = ""
 	d.title = ""
 	d.fmStart, d.fmEnd = -1, -1
 
@@ -122,10 +124,15 @@ func (d *deck) parse() {
 	if d.fmStart >= 0 {
 		for i := d.fmStart + 1; i < d.fmEnd; i++ {
 			k, v, ok := strings.Cut(d.lines[i], ":")
-			if !ok || strings.TrimSpace(k) != "current" {
+			if !ok {
 				continue
 			}
-			d.current = unquoteValue(v)
+			switch strings.TrimSpace(k) {
+			case "current":
+				d.current = unquoteValue(v)
+			case "winner":
+				d.winner = unquoteValue(v)
+			}
 		}
 	}
 

@@ -23,11 +23,10 @@ func (d *deck) setLineChecked(idx int, checked bool) {
 	d.lines[idx] = line[:open+1] + string(state) + line[open+2:]
 }
 
-// writes the current card title into frontmatter, creating the block at
-// the top of the file when it does not yet exist
-func (d *deck) setCurrent(title string) {
-	d.current = title
-	entry := "current: " + quoteValue(title)
+// writes a frontmatter scalar, creating the block at the top of the file
+// when it does not yet exist
+func (d *deck) setFrontmatterKey(key, value string) {
+	entry := key + ": " + quoteValue(value)
 
 	if d.fmStart < 0 {
 		block := []string{"---", entry, "---", ""}
@@ -38,21 +37,20 @@ func (d *deck) setCurrent(title string) {
 	}
 
 	for i := d.fmStart + 1; i < d.fmEnd; i++ {
-		if k, _, ok := strings.Cut(d.lines[i], ":"); ok && strings.TrimSpace(k) == "current" {
+		if k, _, ok := strings.Cut(d.lines[i], ":"); ok && strings.TrimSpace(k) == key {
 			d.lines[i] = entry
 			return
 		}
 	}
 
-	// block exists but has no current key yet
+	// block exists but has no such key yet
 	d.lines = append(d.lines[:d.fmEnd], append([]string{entry}, d.lines[d.fmEnd:]...)...)
 	d.fmEnd++
 	d.shiftCardLinesFrom(d.fmEnd-1, 1)
 }
 
-// drops the current key; removes the whole block if nothing else remains
-func (d *deck) clearCurrent() {
-	d.current = ""
+// drops a frontmatter key; removes the whole block only if no other key remains
+func (d *deck) clearFrontmatterKey(key string) {
 	if d.fmStart < 0 {
 		return
 	}
@@ -63,7 +61,7 @@ func (d *deck) clearCurrent() {
 		if strings.TrimSpace(d.lines[i]) == "" {
 			continue
 		}
-		if k, _, ok := strings.Cut(d.lines[i], ":"); ok && strings.TrimSpace(k) == "current" {
+		if k, _, ok := strings.Cut(d.lines[i], ":"); ok && strings.TrimSpace(k) == key {
 			idx = i
 			continue
 		}
@@ -91,13 +89,34 @@ func (d *deck) clearCurrent() {
 	d.shiftCardLinesFrom(idx, -1)
 }
 
-// unchecks every card and forgets the current card
+func (d *deck) setCurrent(title string) {
+	d.current = title
+	d.setFrontmatterKey("current", title)
+}
+
+func (d *deck) clearCurrent() {
+	d.current = ""
+	d.clearFrontmatterKey("current")
+}
+
+func (d *deck) setWinner(title string) {
+	d.winner = title
+	d.setFrontmatterKey("winner", title)
+}
+
+func (d *deck) clearWinner() {
+	d.winner = ""
+	d.clearFrontmatterKey("winner")
+}
+
+// unchecks every card and forgets both the current card and any winner
 func (d *deck) resetAll() {
 	for i := range d.cards {
 		d.setLineChecked(d.cards[i].line, false)
 		d.cards[i].checked = false
 	}
 	d.clearCurrent()
+	d.clearWinner()
 }
 
 func (d *deck) shiftCardLines(delta int) {

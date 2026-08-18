@@ -9,13 +9,15 @@ type mode int
 const (
 	modeList mode = iota
 	modeDetail
+	modeTournament
 )
 
 // owns mode switching and global messages; the views own everything else
 type rootModel struct {
-	mode   mode
-	list   listView
-	detail detailView
+	mode       mode
+	list       listView
+	detail     detailView
+	tournament tournament
 }
 
 func makeRootModel(reg *registry, focus string) rootModel {
@@ -47,21 +49,49 @@ func (m rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case backToListMsg:
 		m.mode = modeList
 		return m, nil
+
+	case startTournamentMsg:
+		d, err := loadDeck(msg.path)
+		if err != nil {
+			return m, nil
+		}
+		// entry wipes any prior play so the bracket starts from a clean deck
+		d.resetAll()
+		if err := d.write(); err != nil {
+			return m, nil
+		}
+		var cmd tea.Cmd
+		m.tournament, cmd = makeTournament(d)
+		m.mode = modeTournament
+		return m, cmd
+
+	case leaveTournamentMsg:
+		m.mode = modeList
+		m.list.reload()
+		return m, nil
 	}
 
 	var cmd tea.Cmd
-	if m.mode == modeDetail {
+	switch m.mode {
+	case modeTournament:
+		m.tournament, cmd = m.tournament.Update(msg)
+	case modeDetail:
 		m.detail, cmd = m.detail.Update(msg)
-	} else {
+	default:
 		m.list, cmd = m.list.Update(msg)
 	}
 	return m, cmd
 }
 
 func (m rootModel) View() tea.View {
-	content := m.list.View()
-	if m.mode == modeDetail {
+	var content string
+	switch m.mode {
+	case modeTournament:
+		content = m.tournament.View()
+	case modeDetail:
 		content = m.detail.View()
+	default:
+		content = m.list.View()
 	}
 
 	v := tea.NewView(content)

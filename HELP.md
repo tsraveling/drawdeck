@@ -13,6 +13,7 @@ Draw cards at random from markdown checklists.
 
 - `↑↓` / `jk` — navigate
 - `enter` — open deck
+- `t` — tournament mode
 - `a` — add a deck by path
 - `d` — remove a deck from the list (the file is left alone)
 - `r` — re-read every deck file
@@ -24,6 +25,12 @@ Draw cards at random from markdown checklists.
 - tap `space` three times — draw a card, on any terminal
 - `ctrl+r` — reset the deck
 - `esc` — back to the list
+
+## Tournament mode
+
+Runs the whole deck as a single-elimination bracket. `←→` / `hl` pick a winner from each pair until one card is left, recorded as the deck's `winner`. An odd card each round gets a keep-or-discard choice.
+
+Starting a tournament resets the deck, and progress is lost if you leave. A deck with a winner is locked until `ctrl+r`.
 
 ## Deck files
 
