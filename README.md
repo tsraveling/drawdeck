@@ -7,7 +7,7 @@ Point it at a markdown file full of checkboxes and it becomes a deck. Drawing pi
 ## Install
 
 ```sh
-go build -o drawdeck
+go install drawdeck
 ```
 
 ## Usage
