@@ -41,6 +41,9 @@ type listView struct {
 
 	// transient inline message, cleared on the next navigation
 	notice string
+
+	// renders the notice as success rather than as a warning
+	noticeOK bool
 }
 
 func makeListView(reg *registry, focus string) listView {
@@ -69,6 +72,16 @@ func (l *listView) reload() {
 		l.focusOn(prev)
 	}
 	l.clampCursor()
+}
+
+func (l *listView) setNotice(msg string, ok bool) {
+	l.notice = msg
+	l.noticeOK = ok
+}
+
+func (l *listView) clearNotice() {
+	l.notice = ""
+	l.noticeOK = false
 }
 
 func (l *listView) focusOn(path string) {
@@ -100,25 +113,19 @@ func (l listView) selectedPath() string {
 }
 
 // @region list:add -- ADD DECK VALIDATION
-// rejects non-markdown, missing, unreadable, and already-registered paths
+// rejects missing, unreadable, and already-registered paths; a directory
+// passes as long as it holds at least one unregistered deck
 func (l *listView) validateAdd(in string) error {
-	if strings.TrimSpace(in) == "" {
-		return fmt.Errorf("enter a path")
-	}
-	abs, err := resolvePath(in)
+	paths, err := expandDeckArg(in)
 	if err != nil {
 		return err
 	}
-	if !strings.EqualFold(filepath.Ext(abs), ".md") {
-		return fmt.Errorf("must be a .md file")
+	for _, p := range paths {
+		if !l.reg.has(p) {
+			return nil
+		}
 	}
-	if l.reg.has(abs) {
-		return fmt.Errorf("already added")
-	}
-	if _, err := loadDeck(abs); err != nil {
-		return fmt.Errorf("cannot read: %s", filepath.Base(abs))
-	}
-	return nil
+	return fmt.Errorf("already added")
 }
 
 // @region list:keys -- LIST INPUT
@@ -131,12 +138,15 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 		case promptCancel:
 			l.prompt = nil
 		case promptCommit:
-			abs, err := resolvePath(p.value())
+			paths, err := expandDeckArg(p.value())
 			l.prompt = nil
 			if err == nil {
-				l.reg.add(abs)
+				focus, added, _ := addDecks(l.reg, paths)
 				l.reload()
-				l.focusOn(abs)
+				l.focusOn(focus)
+				if added > 1 {
+					l.setNotice(fmt.Sprintf("added %d decks", added), true)
+				}
 			}
 		}
 		return l, cmd
@@ -164,7 +174,7 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 		return l, nil
 	}
 
-	l.notice = ""
+	l.clearNotice()
 
 	switch km.String() {
 	case "q", "ctrl+c":
@@ -185,7 +195,7 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 			return l, func() tea.Msg { return openDeckMsg{path} }
 		}
 	case "a":
-		p := newTextPrompt("Add deck", "path/to/deck.md", l.validateAdd)
+		p := newTextPrompt("Add deck", "deck.md or a folder", l.validateAdd)
 		l.prompt = &p
 	case "d":
 		if l.selected() != nil {
@@ -207,7 +217,7 @@ func (l listView) startTournament() (listView, tea.Cmd) {
 		return l, nil
 	}
 	if len(e.deck.cards) < 2 {
-		l.notice = "tournament needs at least 2 cards"
+		l.setNotice("tournament needs at least 2 cards", false)
 		return l, nil
 	}
 
@@ -287,7 +297,11 @@ func (l listView) View() string {
 		b.WriteString("\n\n")
 	}
 	if l.notice != "" {
-		b.WriteString(ErrorStyle.Render(l.notice))
+		style := ErrorStyle
+		if l.noticeOK {
+			style = ActiveStyle
+		}
+		b.WriteString(style.Render(l.notice))
 		b.WriteString("\n\n")
 	}
 	b.WriteString(HelpStyle.Render("↑↓/jk navigate  enter open  t tournament  a add  d delete  r refresh  q quit"))

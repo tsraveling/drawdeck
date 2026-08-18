@@ -6,6 +6,7 @@ Draw cards at random from markdown checklists.
 
 - `drawdeck` — open the deck list
 - `drawdeck add FILE.md` — register a deck and open it
+- `drawdeck add DIR` — register every markdown file in a folder (`.` for the current one)
 - `drawdeck -v` — print version
 - `drawdeck -h` — show this help
 
@@ -14,7 +15,7 @@ Draw cards at random from markdown checklists.
 - `↑↓` / `jk` — navigate
 - `enter` — open deck
 - `t` — tournament mode
-- `a` — add a deck by path
+- `a` — add a deck, or a whole folder of them, by path
 - `d` — remove a deck from the list (the file is left alone)
 - `r` — re-read every deck file
 - `q` — quit

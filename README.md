@@ -15,6 +15,7 @@ go build -o drawdeck
 ```sh
 drawdeck                    # open the deck list
 drawdeck add DECK.md        # register a deck and open it
+drawdeck add .              # register every markdown file in a folder
 drawdeck -h                 # help
 drawdeck -v                 # version
 ```
@@ -28,7 +29,7 @@ drawdeck -v                 # version
 | `↑↓` / `jk` | navigate |
 | `enter` / `l` | open deck |
 | `t` | tournament mode |
-| `a` | add a deck by path |
+| `a` | add a deck or folder by path |
 | `d` | remove from list (file untouched) |
 | `r` | re-read every deck file |
 | `q` | quit |
