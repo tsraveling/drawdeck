@@ -20,6 +20,7 @@ var (
 	helpText   = lipgloss.NewStyle().Foreground(ColorBasic)
 )
 
+// @region cli:markdown -- HELP MARKDOWN RENDERER
 // minimal markdown renderer: headers, bullets, fenced blocks, and code spans
 func renderHelp(src string, width int) string {
 	var out []string
@@ -68,6 +69,7 @@ func inlineCode(s string) string {
 	return b.String()
 }
 
+// @region cli:help -- HELP SCREEN MODEL
 type helpModel struct {
 	vp viewport.Model
 }

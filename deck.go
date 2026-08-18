@@ -17,6 +17,7 @@ var noteRe = regexp.MustCompile(`^\s+>\s?(.*)$`)
 // top-level markdown header
 var titleRe = regexp.MustCompile(`^#\s+(.*)$`)
 
+// @region deck:model -- DECK AND CARD TYPES
 type card struct {
 	title   string
 	notes   string
@@ -41,6 +42,7 @@ type deck struct {
 	fmEnd   int
 }
 
+// @region deck:state -- DRAW POOL AND PROGRESS
 func (d *deck) doneCount() int {
 	n := 0
 	for _, c := range d.cards {
@@ -84,6 +86,7 @@ func (d *deck) exhausted() bool {
 	return len(d.drawable()) == 0
 }
 
+// @region deck:load -- LOAD FROM MARKDOWN
 func loadDeck(path string) (*deck, error) {
 	if !strings.EqualFold(filepath.Ext(path), ".md") {
 		return nil, fmt.Errorf("not a markdown file: %s", filepath.Base(path))
@@ -100,6 +103,7 @@ func loadDeck(path string) (*deck, error) {
 	return d, nil
 }
 
+// @region deck:parse -- PARSE CARDS AND FRONTMATTER
 // rebuilds title, cards, and frontmatter state from d.lines
 func (d *deck) parse() {
 	d.cards = nil
@@ -167,6 +171,7 @@ func (d *deck) parse() {
 	}
 }
 
+// @region deck:notes -- INDENTED QUOTE NOTES
 // gathers consecutive indented quote lines following a card, terminated
 // by a blank line or any non-quote content
 func collectNotes(lines []string, start int) string {

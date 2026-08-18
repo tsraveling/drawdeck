@@ -9,6 +9,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 )
 
+// @region cli:entry -- ENTRYPOINT
 func main() {
 	focus, err := parseArgs(os.Args[1:])
 	if err != nil {
@@ -40,6 +41,7 @@ func run(m tea.Model) {
 	}
 }
 
+// @region cli:args -- COMMAND LINE ARGS
 // returns the absolute path of a deck to focus, if `add` was used
 func parseArgs(args []string) (string, error) {
 	if len(args) == 0 {

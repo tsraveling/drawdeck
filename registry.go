@@ -10,6 +10,7 @@ import (
 
 const registryFile = "decks.json"
 
+// @region app:registry -- REGISTERED DECK STORE
 // on-disk shape: paths only, never cached titles
 type registryData struct {
 	Decks []string `json:"decks"`

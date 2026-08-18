@@ -2,6 +2,7 @@ package main
 
 import "charm.land/lipgloss/v2"
 
+// @region ui:styles -- COLORS AND STYLES
 var (
 	// Colors
 	ColorPrimary   = lipgloss.Color("205")

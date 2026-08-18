@@ -6,6 +6,7 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
+// @region ui:prompt -- TEXT INPUT MODAL
 type promptResult int
 
 const (

@@ -31,6 +31,7 @@ func (e deckEntry) sortKey() string {
 	return strings.ToLower(strings.TrimSuffix(base, filepath.Ext(base)))
 }
 
+// @region list:view -- DECK LIST MODEL
 type listView struct {
 	reg     *registry
 	entries []deckEntry
@@ -49,6 +50,7 @@ func makeListView(reg *registry, focus string) listView {
 	return l
 }
 
+// @region list:reload -- RELOAD DECKS FROM DISK
 // re-reads every registered deck file; titles and counts are never cached
 func (l *listView) reload() {
 	prev := l.selectedPath()
@@ -97,6 +99,7 @@ func (l listView) selectedPath() string {
 	return l.entries[l.cursor].path
 }
 
+// @region list:add -- ADD DECK VALIDATION
 // rejects non-markdown, missing, unreadable, and already-registered paths
 func (l *listView) validateAdd(in string) error {
 	if strings.TrimSpace(in) == "" {
@@ -118,6 +121,7 @@ func (l *listView) validateAdd(in string) error {
 	return nil
 }
 
+// @region list:keys -- LIST INPUT
 func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 	// modal and confirm swallow input while active
 	if l.prompt != nil {
@@ -194,6 +198,7 @@ func (l listView) Update(msg tea.Msg) (listView, tea.Cmd) {
 	return l, nil
 }
 
+// @region list:tourney -- TOURNAMENT ENTRY GUARD
 // a tournament needs a readable deck of at least two cards, and warns before
 // discarding any existing play
 func (l listView) startTournament() (listView, tea.Cmd) {
@@ -222,6 +227,7 @@ func (l listView) selected() *deckEntry {
 	return &l.entries[l.cursor]
 }
 
+// @region list:render -- LIST RENDER
 func (l listView) View() string {
 	w := cfg.viewWidth()
 

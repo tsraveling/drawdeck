@@ -9,6 +9,7 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
+// @region ui:flip -- CARD FLIP ANIMATION
 // ~400ms total at ~22fps
 const (
 	flipFrames   = 9

@@ -32,6 +32,7 @@ func chargeTick() tea.Cmd {
 // emitted when the user leaves a deck
 type backToListMsg struct{}
 
+// @region draw:view -- DETAIL VIEW MODEL
 type detailView struct {
 	deck *deck
 	bar  progress.Model
@@ -92,6 +93,7 @@ func (v *detailView) refresh() {
 	v.deck = d
 }
 
+// @region draw:card -- DRAW AND COMMIT CARD
 // picks a card, commits it to the file immediately, then animates the reveal
 func (v *detailView) draw() tea.Cmd {
 	v.cancelCharge()
@@ -177,6 +179,7 @@ func (v detailView) Update(msg tea.Msg) (detailView, tea.Cmd) {
 	return v, nil
 }
 
+// @region draw:keys -- DETAIL INPUT
 func (v detailView) handleKey(msg tea.KeyPressMsg) (detailView, tea.Cmd) {
 	key := msg.String()
 
@@ -232,6 +235,7 @@ func (v detailView) handleKey(msg tea.KeyPressMsg) (detailView, tea.Cmd) {
 	return v, nil
 }
 
+// @region draw:gesture -- HOLD AND TAP CHARGE
 func (v detailView) registerTap() (detailView, tea.Cmd) {
 	if v.flip.active || v.deck.exhausted() {
 		return v, nil
@@ -301,6 +305,7 @@ func (v detailView) renderCard() string {
 		Render(lipgloss.JoinVertical(lipgloss.Left, parts...))
 }
 
+// @region draw:render -- DETAIL RENDER
 func (v detailView) View() string {
 	w := cfg.viewWidth()
 
@@ -364,27 +369,4 @@ func (v detailView) drawPrompt() string {
 		return "hold space to draw card"
 	}
 	return "tap space ×3 to draw card"
-}
-
-func wrapText(s string, width int) string {
-	if width < 1 {
-		return s
-	}
-	var out []string
-	for para := range strings.SplitSeq(s, "\n") {
-		line := ""
-		for word := range strings.FieldsSeq(para) {
-			switch {
-			case line == "":
-				line = word
-			case len(line)+1+len(word) <= width:
-				line += " " + word
-			default:
-				out = append(out, line)
-				line = word
-			}
-		}
-		out = append(out, line)
-	}
-	return strings.Join(out, "\n")
 }

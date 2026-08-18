@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// @region deck:write -- CHECKBOX LINE REWRITE
 // flips the state character of a checkbox line in place. Only the single
 // byte between the brackets changes; marker, indent, and spacing survive.
 func (d *deck) setLineChecked(idx int, checked bool) {
@@ -23,6 +24,7 @@ func (d *deck) setLineChecked(idx int, checked bool) {
 	d.lines[idx] = line[:open+1] + string(state) + line[open+2:]
 }
 
+// @region deck:frontmatter -- FRONTMATTER READ AND WRITE
 // writes a frontmatter scalar, creating the block at the top of the file
 // when it does not yet exist
 func (d *deck) setFrontmatterKey(key, value string) {
@@ -109,6 +111,7 @@ func (d *deck) clearWinner() {
 	d.clearFrontmatterKey("winner")
 }
 
+// @region deck:reset -- FULL DECK RESET
 // unchecks every card and forgets both the current card and any winner
 func (d *deck) resetAll() {
 	for i := range d.cards {

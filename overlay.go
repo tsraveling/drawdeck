@@ -2,6 +2,7 @@ package main
 
 import "charm.land/lipgloss/v2"
 
+// @region ui:overlay -- MODAL COMPOSITING
 // composites fg over bg: horizontally centered on the app box, vertically
 // centered in the terminal. The background is padded to full height first so
 // the modal floats free of whatever short box happens to be underneath it.

@@ -12,6 +12,7 @@ const (
 	modeTournament
 )
 
+// @region app:root -- ROOT MODEL AND MODE SWITCHING
 // owns mode switching and global messages; the views own everything else
 type rootModel struct {
 	mode       mode

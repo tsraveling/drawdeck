@@ -9,6 +9,7 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
+// @region ui:flash -- ROUND FLASH BANNER
 const (
 	flashDuration   = 1400 * time.Millisecond
 	flashFrameDur   = 100 * time.Millisecond

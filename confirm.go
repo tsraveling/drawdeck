@@ -2,6 +2,7 @@ package main
 
 import tea "charm.land/bubbletea/v2"
 
+// @region ui:confirm -- YES NO CONFIRM
 type confirmKind int
 
 const (

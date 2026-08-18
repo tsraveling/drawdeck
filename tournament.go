@@ -47,6 +47,7 @@ const (
 // emitted when a tournament ends or is abandoned
 type leaveTournamentMsg struct{}
 
+// @region tourney:model -- TOURNAMENT STATE
 type tournament struct {
 	deck *deck
 
@@ -78,6 +79,7 @@ func shuffled(in []card) []card {
 	return out
 }
 
+// @region tourney:bracket -- ROUND PAIRING AND ADVANCE
 // challenges plus, when the round is odd, one keep/discard decision
 func (t tournament) totalSteps() int {
 	return len(t.round)/2 + len(t.round)%2
@@ -119,6 +121,7 @@ func (t tournament) header() string {
 	return fmt.Sprintf("%s: %d / %d", roundName(n), t.idx+1, t.totalSteps())
 }
 
+// @region tourney:pick -- PICK COMMIT
 // applies the highlighted pick and moves to the next step or round
 func (t *tournament) commitPick() tea.Cmd {
 	side := t.highlight
@@ -156,6 +159,7 @@ func (t *tournament) endRound() tea.Cmd {
 	return t.flash.start(flashText(len(t.round)))
 }
 
+// @region tourney:victory -- WINNER SCREEN
 func (t *tournament) declareWinner() tea.Cmd {
 	t.phase = phaseVictory
 	if len(t.round) == 0 {
@@ -168,6 +172,7 @@ func (t *tournament) declareWinner() tea.Cmd {
 	return t.flash.start(strings.ToUpper(w.title) + "!")
 }
 
+// @region tourney:keys -- TOURNAMENT INPUT
 func (t tournament) Update(msg tea.Msg) (tournament, tea.Cmd) {
 	if t.confirm.active() {
 		kind := t.confirm.kind
@@ -298,6 +303,7 @@ func (t tournament) View() string {
 	return ViewStyle.Width(w).Render(b.String())
 }
 
+// @region tourney:render -- CHALLENGE RENDER
 func (t tournament) renderChallenge(inner int) string {
 	stacked := cfg.ww < stackBelowWidth
 

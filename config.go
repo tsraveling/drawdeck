@@ -13,6 +13,7 @@ const (
 	maxTournamentWidth = 120
 )
 
+// @region app:layout -- TERMINAL SIZE AND VIEW WIDTHS
 type config struct {
 	// terminal dimensions
 	ww int
@@ -44,6 +45,7 @@ func (c *config) setSize(w, h int) {
 	c.wh = h
 }
 
+// @region app:paths -- CONFIG DIR AND PATH RESOLUTION
 // resolves $XDG_CONFIG_HOME/drawdeck, falling back to ~/.config/drawdeck
 func configDir() (string, error) {
 	base := os.Getenv("XDG_CONFIG_HOME")
