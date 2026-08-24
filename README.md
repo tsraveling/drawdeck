@@ -16,6 +16,7 @@ go install drawdeck
 drawdeck                    # open the deck list
 drawdeck add DECK.md        # register a deck and open it
 drawdeck add .              # register every markdown file in a folder
+drawdeck --no-priority      # draw without regard to priority markers
 drawdeck -h                 # help
 drawdeck -v                 # version
 ```
@@ -62,6 +63,16 @@ The top `#` header names the deck. Every non-indented checkbox is a card; an ind
 - [ ] A woolly yak
 - [ ] A giant elephant
     > This one is my favorite
+```
+
+## Priority
+
+A card whose title contains `(!!)` is top priority; `(!)` is medium; everything else is normal. Drawing narrows the pool to the highest tier that still has unchecked cards — top-priority cards come up until they are gone, then medium, then the rest. Pass `--no-priority` to draw from the whole deck at once.
+
+```markdown
+- [ ] Fix the roof (!!)
+- [ ] Call the plumber (!)
+- [ ] Rake the yard
 ```
 
 Drawing checks the card off and records it in frontmatter at the top of the file. Every other byte is left exactly as you wrote it — prose, extra headers, and nested lists all survive.

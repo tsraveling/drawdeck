@@ -59,6 +59,30 @@ func TestViewsRender(t *testing.T) {
 	}
 }
 
+// returning from a deck must pick up whatever the draw wrote to disk
+func TestListCountsRefreshOnBack(t *testing.T) {
+	deckPath := writeTemp(t, sample)
+	reg := testRegistry(t, deckPath)
+	m := sizedRoot(t, reg)
+
+	d, err := loadDeck(deckPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	idx := d.drawable()[0]
+	d.setLineChecked(d.cards[idx].line, true)
+	if err := d.write(); err != nil {
+		t.Fatal(err)
+	}
+
+	updated, _ := m.Update(backToListMsg{})
+	m = updated.(rootModel)
+
+	if out := m.View().Content; !strings.Contains(out, "(2 / 5)") {
+		t.Errorf("stale counts after returning to the list:\n%s", out)
+	}
+}
+
 func TestEmptyRegistryRenders(t *testing.T) {
 	reg := testRegistry(t)
 	m := sizedRoot(t, reg)

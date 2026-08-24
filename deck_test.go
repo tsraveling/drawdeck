@@ -228,11 +228,59 @@ func TestResetClearsWinner(t *testing.T) {
 	}
 }
 
-func TestDrawableExcludesCurrent(t *testing.T) {
-	d, _ := loadDeck(writeTemp(t, "# T\n\n- [ ] a\n- [ ] b\n"))
-	d.current = "a"
-	got := d.drawable()
-	if len(got) != 1 || d.cards[got[0]].title != "b" {
-		t.Errorf("drawable = %+v, want just b", got)
+func TestDrawableRespectsPriority(t *testing.T) {
+	src := "# T\n\n- [ ] plain\n- [ ] medium (!)\n- [ ] top (!!)\n- [ ] also top (!!)\n"
+	d, _ := loadDeck(writeTemp(t, src))
+
+	titles := func() []string {
+		var out []string
+		for _, i := range d.drawable() {
+			out = append(out, d.cards[i].title)
+		}
+		return out
+	}
+
+	if got := titles(); len(got) != 2 || got[0] != "top (!!)" || got[1] != "also top (!!)" {
+		t.Fatalf("drawable = %v, want both (!!) cards", got)
+	}
+
+	for i := range d.cards {
+		if d.cards[i].priority == prioTop {
+			d.cards[i].checked = true
+		}
+	}
+	if got := titles(); len(got) != 1 || got[0] != "medium (!)" {
+		t.Fatalf("drawable = %v, want the (!) card", got)
+	}
+
+	for i := range d.cards {
+		if d.cards[i].priority == prioMedium {
+			d.cards[i].checked = true
+		}
+	}
+	if got := titles(); len(got) != 1 || got[0] != "plain" {
+		t.Fatalf("drawable = %v, want the plain card", got)
+	}
+}
+
+func TestNoPriorityFlagDrawsEverything(t *testing.T) {
+	cfg.noPriority = true
+	t.Cleanup(func() { cfg.noPriority = false })
+
+	d, _ := loadDeck(writeTemp(t, "# T\n\n- [ ] plain\n- [ ] top (!!)\n"))
+	if got := d.drawable(); len(got) != 2 {
+		t.Errorf("drawable = %v, want every unchecked card", got)
+	}
+}
+
+func TestTakeFlags(t *testing.T) {
+	t.Cleanup(func() { cfg.noPriority = false })
+
+	rest := takeFlags([]string{"--no-priority", "add", "x.md"})
+	if !cfg.noPriority {
+		t.Error("--no-priority not applied")
+	}
+	if len(rest) != 2 || rest[0] != "add" || rest[1] != "x.md" {
+		t.Errorf("rest = %v, want the add command intact", rest)
 	}
 }

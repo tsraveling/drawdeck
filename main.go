@@ -41,6 +41,8 @@ func run(m tea.Model) {
 // @region cli:args -- COMMAND LINE ARGS
 // returns the deck paths to register, if `add` was used; the first is focused
 func parseArgs(args []string) ([]string, error) {
+	args = takeFlags(args)
+
 	if len(args) == 0 {
 		return nil, nil
 	}
@@ -60,4 +62,17 @@ func parseArgs(args []string) ([]string, error) {
 	}
 
 	return nil, fmt.Errorf("unknown command: %s", args[0])
+}
+
+// pulls global flags out of the arg list, leaving the command behind
+func takeFlags(args []string) []string {
+	var rest []string
+	for _, a := range args {
+		if a == "--no-priority" {
+			cfg.noPriority = true
+			continue
+		}
+		rest = append(rest, a)
+	}
+	return rest
 }

@@ -21,6 +21,9 @@ type config struct {
 
 	// true once the terminal reports Kitty keyboard protocol support
 	holdSupported bool
+
+	// --no-priority: draw from every unchecked card, ignoring (!!) and (!)
+	noPriority bool
 }
 
 var cfg config

@@ -48,6 +48,8 @@ func (m rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case backToListMsg:
+		// drawing wrote to disk, so the list's counts are stale
+		m.list.reload()
 		m.mode = modeList
 		return m, nil
 

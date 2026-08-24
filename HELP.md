@@ -7,6 +7,7 @@ Draw cards at random from markdown checklists.
 - `drawdeck` — open the deck list
 - `drawdeck add FILE.md` — register a deck and open it
 - `drawdeck add DIR` — register every markdown file in a folder (`.` for the current one)
+- `drawdeck --no-priority` — ignore priority markers when drawing
 - `drawdeck -v` — print version
 - `drawdeck -h` — show this help
 
@@ -44,5 +45,7 @@ The top `#` header names the deck. Every non-indented checkbox is a card; an ind
 - [ ] A giant elephant
     > This one is my favorite
 ```
+
+A card whose title contains `(!!)` is top priority and `(!)` is medium. Draws come from the highest tier that still has unchecked cards, so top-priority cards clear first, then medium, then the rest. `--no-priority` draws from everything at once.
 
 Drawing checks the card off and records it in the file's frontmatter. Nothing else in the file is touched.

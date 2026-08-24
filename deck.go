@@ -17,11 +17,22 @@ var noteRe = regexp.MustCompile(`^\s+>\s?(.*)$`)
 // top-level markdown header
 var titleRe = regexp.MustCompile(`^#\s+(.*)$`)
 
+// priority marker anywhere in a card title
+var prioRe = regexp.MustCompile(`\((!{1,2})\)`)
+
 // @region deck:model -- DECK AND CARD TYPES
+// draw tiers, highest first
+const (
+	prioNormal = iota
+	prioMedium
+	prioTop
+)
+
 type card struct {
-	title   string
-	notes   string
-	checked bool
+	title    string
+	notes    string
+	checked  bool
+	priority int
 
 	// index into deck.lines, for surgical rewrites
 	line int
@@ -66,20 +77,40 @@ func (d *deck) currentCard() *card {
 	return nil
 }
 
-// unchecked cards, excluding the current one so the same card never
-// comes up twice in a row
+// unchecked cards. unless --no-priority is set, the pool narrows to the
+// highest priority tier that still has candidates
 func (d *deck) drawable() []int {
 	var out []int
+	best := prioNormal
 	for i, c := range d.cards {
 		if c.checked {
 			continue
 		}
-		if d.current != "" && c.title == d.current {
+		if cfg.noPriority {
+			out = append(out, i)
 			continue
 		}
-		out = append(out, i)
+		if c.priority > best {
+			best = c.priority
+			out = out[:0]
+		}
+		if c.priority == best {
+			out = append(out, i)
+		}
 	}
 	return out
+}
+
+// (!!) is top priority, (!) is medium, anything else is normal
+func parsePriority(title string) int {
+	m := prioRe.FindStringSubmatch(title)
+	if m == nil {
+		return prioNormal
+	}
+	if m[1] == "!!" {
+		return prioTop
+	}
+	return prioMedium
 }
 
 func (d *deck) exhausted() bool {
@@ -160,6 +191,7 @@ func (d *deck) parse() {
 			checked: m[3] != " ",
 			line:    i,
 		}
+		c.priority = parsePriority(c.title)
 		c.notes = collectNotes(d.lines, i+1)
 		d.cards = append(d.cards, c)
 	}
