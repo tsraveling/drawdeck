@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.1 - 2026-08-24
+#### Bug Fixes
+- added priorities - (73ef99c) - Tim Raveling
+#### Documentation
+- Update README.md - (14550ae) - Tim Raveling
+
+- - -
+
 ## v0.1.0 - 2026-08-18
 #### Features
 - initial working build - (a69036b) - Tim Raveling
