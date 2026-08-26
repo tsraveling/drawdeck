@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.2 - 2026-08-26
+#### Bug Fixes
+- added current card ui to summary screen - (80af1b9) - Tim Raveling
+
+- - -
+
 ## v0.1.1 - 2026-08-24
 #### Bug Fixes
 - added priorities - (73ef99c) - Tim Raveling
