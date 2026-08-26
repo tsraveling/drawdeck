@@ -237,6 +237,35 @@ func (l listView) selected() *deckEntry {
 	return &l.entries[l.cursor]
 }
 
+// @region list:current -- CURRENT CARD COLUMN
+// columns reserved for the count at the right edge of a deck row
+const countGutter = 11
+
+// narrowest truncation worth rendering before collapsing to a marker
+const minCardWidth = 5
+
+// right-aligns the current card title so it ends countGutter columns from the
+// content edge. used is the width already consumed by the cursor and deck
+// title. returns "" when the row has no room for it
+func currentCardCell(title string, used int) string {
+	end := cfg.contentWidth() - countGutter
+	avail := end - used - 1
+	if avail < 1 {
+		return ""
+	}
+
+	text := title
+	if lipgloss.Width(text) > avail {
+		if avail < minCardWidth {
+			text = "\u25cf"
+		} else {
+			text = truncateWidth(title, avail-1) + "\u2026"
+		}
+	}
+
+	return strings.Repeat(" ", end-used-lipgloss.Width(text)) + ActiveStyle.Render(text)
+}
+
 // @region list:render -- LIST RENDER
 func (l listView) View() string {
 	w := cfg.viewWidth()
@@ -279,13 +308,28 @@ func (l listView) View() string {
 		// the short delete confirm replaces the count on its own row; longer
 		// prompts render below the list instead
 		rightRendered := CountStyle.Render(right)
-		if selected && l.confirm.kind == confirmDeleteDeck {
+		confirming := selected && l.confirm.kind == confirmDeleteDeck
+		if confirming {
 			rightRendered = l.confirm.View()
 		}
 
-		gap := max(cfg.contentWidth()-lipgloss.Width(cursor+left)-lipgloss.Width(rightRendered), 1)
+		used := lipgloss.Width(cursor + left)
+
+		var cardCell string
+		if !confirming && e.deck != nil {
+			if cc := e.deck.currentCard(); cc != nil {
+				cardCell = currentCardCell(cc.title, used)
+			}
+		}
+
+		gap := max(cfg.contentWidth()-used-lipgloss.Width(rightRendered), 1)
+		if cardCell != "" {
+			gap = max(countGutter-lipgloss.Width(rightRendered), 1)
+		}
+
 		b.WriteString(cursor)
 		b.WriteString(style.Render(left))
+		b.WriteString(cardCell)
 		b.WriteString(strings.Repeat(" ", gap))
 		b.WriteString(rightRendered)
 		b.WriteString("\n")

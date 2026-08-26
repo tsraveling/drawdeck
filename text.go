@@ -1,6 +1,10 @@
 package main
 
-import "strings"
+import (
+	"strings"
+
+	"charm.land/lipgloss/v2"
+)
 
 // @region ui:wrap -- TEXT WRAP HELPER
 func wrapText(s string, width int) string {
@@ -24,4 +28,20 @@ func wrapText(s string, width int) string {
 		out = append(out, line)
 	}
 	return strings.Join(out, "\n")
+}
+
+// @region ui:truncate -- WIDTH-LIMITED TRUNCATION
+// cuts a string down to at most w display columns
+func truncateWidth(s string, w int) string {
+	if lipgloss.Width(s) <= w {
+		return s
+	}
+	var b strings.Builder
+	for _, r := range s {
+		if lipgloss.Width(b.String()+string(r)) > w {
+			break
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
 }
